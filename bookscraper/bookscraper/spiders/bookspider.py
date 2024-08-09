@@ -27,14 +27,10 @@ class BookspiderSpider(scrapy.Spider):
 
     #         yield response.follow(next_page_url, callback=self.parse)
     def start_requests(self):
-        print("***************************************************")
         yield scrapy.Request(url=self.url, callback=self.discover)
 
     def discover(self, response):
-        print(f"*******{type(response)}")
         python_dict = json.loads(response.text)
-        print(f"*******{type(python_dict)}")
-        print(python_dict[0]["title"])
         for item in python_dict:
             yield {
                 "userId": item["userId"],
