@@ -1,10 +1,21 @@
 import scrapy
 import json
+from bookscraper.bookscraper.items import BookscraperTodoItem
+from bookscraper.bookscraper.items import BookscraperUserItem
 
 
 class BookspiderSpider(scrapy.Spider):
+
     name = "bookspider"
-    url = "https://jsonplaceholder.typicode.com/todos"
+
+    url = "https://jsonplaceholder.typicode.com/"
+
+    def __init__(self, path=None, *args, **kwargs):
+        super(BookspiderSpider, self).__init__(*args, **kwargs)
+        self.path = path
+        print(path)
+        self.url2 = f"{self.url}{path}"
+
     # allowed_domains = ["books.toscrape.com"]
     # start_urls = ["https://books.toscrape.com/"]
 
@@ -27,14 +38,34 @@ class BookspiderSpider(scrapy.Spider):
 
     #         yield response.follow(next_page_url, callback=self.parse)
     def start_requests(self):
-        yield scrapy.Request(url=self.url, callback=self.discover)
+        if self.path == "todos":
+            yield scrapy.Request(url=self.url2, callback=self.discover_todos)
+        elif self.path == "users":
+            yield scrapy.Request(url=self.url2, callback=self.discover_users)
+        else:
+            return None
 
-    def discover(self, response):
+    def discover_todos(self, response):
         python_dict = json.loads(response.text)
+        todo_item = BookscraperTodoItem()
         for item in python_dict:
-            yield {
-                "userId": item["userId"],
-                "id": item["id"],
-                "title": item["title"],
-                "completed": item["completed"],
-            }
+            print("start*************************************************")
+            print(item)
+            print("end*************************************************")
+            todo_item["userId"] = item["userId"]
+            todo_item["id"] = item["id"]
+            todo_item["title"] = item["title"]
+            todo_item["completed"] = item["completed"]
+
+            yield todo_item
+
+    def discover_users(self, response):
+        python_dict = json.loads(response.text)
+        user_item = BookscraperUserItem()
+        for item in python_dict:
+            user_item["id"] = item["id"]
+            user_item["name"] = item["name"]
+            user_item["username"] = item["username"]
+            user_item["email"] = item["email"]
+
+            yield user_item
